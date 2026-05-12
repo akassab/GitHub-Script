@@ -1,23 +1,32 @@
 name: Learning GitHub Script
+
 on:
   issues:
     types: [opened]
+
+permissions:
+  issues: write
+  repository-projects: write
+
 jobs:
   comment:
     runs-on: ubuntu-latest
+    env:
+      COLUMN_ID: ${{ secrets.PROJECT_COLUMN_ID }}
     steps:
-    - uses: actions/github-script@0.8.0
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-            github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: "🎉 You've created this issue comment using GitHub Script!!!"
-            })
-            github.projects.createCard({
-            column_id: {{columnID}},
-            content_id: context.payload.issue.id,
-            content_type: "Issue"
-            });
+      - uses: actions/github-script@0.8.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            return github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "🎉 You've created this issue comment using GitHub Script!!!"
+            }).then(() =>
+              github.projects.createCard({
+                column_id: parseInt(process.env.COLUMN_ID, 10),
+                content_id: context.payload.issue.id,
+                content_type: "Issue"
+              })
+            );
