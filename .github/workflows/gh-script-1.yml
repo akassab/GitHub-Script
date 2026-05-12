@@ -11,13 +11,13 @@ permissions:
 jobs:
   comment:
     runs-on: ubuntu-latest
-    env:
-      COLUMN_ID: ${{ secrets.PROJECT_COLUMN_ID }}
     steps:
       - uses: actions/github-script@0.8.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const columnId = 12345678;
+
             return github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -25,7 +25,7 @@ jobs:
               body: "🎉 You've created this issue comment using GitHub Script!!!"
             }).then(() =>
               github.projects.createCard({
-                column_id: parseInt(process.env.COLUMN_ID, 10),
+                column_id: columnId,
                 content_id: context.payload.issue.id,
                 content_type: "Issue"
               })
